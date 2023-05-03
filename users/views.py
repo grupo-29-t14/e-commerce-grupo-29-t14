@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from rest_framework.generics import ListCreateAPIView
+from .models import User
 
-# Create your views here.
+
+class UserView(ListCreateAPIView):
+    queryset = User.objects.all()

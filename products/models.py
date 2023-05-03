@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from djmoney.models.field import MoneyField
+from djmoney.models.fields import MoneyField
 
 
 class CategoryChoices(models.TextChoices):
@@ -28,7 +28,7 @@ class CategoryChoices(models.TextChoices):
 
 class Product(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
-    seller_id = models.ForeignKey(
+    seller = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="products"
     )
     name = models.CharField(max_length=120)
