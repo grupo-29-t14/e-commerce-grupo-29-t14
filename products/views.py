@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from rest_framework.generics import ListCreateAPIView
+from .models import Product
 
-# Create your views here.
+
+class ProductView(ListCreateAPIView):
+    queryset = Product.objects.all()

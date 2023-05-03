@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 dotenv.load_dotenv()
-SECRET_KEY = dotenv.getenv("SECRET_KEY", "r4nd0md3pl0y")
+SECRET_KEY = os.getenv("SECRET_KEY", "r4nd0md3pl0y")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "drf_spectacular",
+    "djmoney",
     "addresses",
     "cart",
     "orders",
@@ -136,8 +137,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(hours=24)}
 
+AUTH_USER_MODEL = "users.User"
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication"
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }

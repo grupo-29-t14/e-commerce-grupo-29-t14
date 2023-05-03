@@ -47,6 +47,14 @@ tests = ["attrs", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest-mypy-plugins", "pytest-xdist", "pytest (>=4.3.0)"]
 
 [[package]]
+name = "babel"
+version = "2.12.1"
+description = "Internationalization utilities"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "backcall"
 version = "0.2.0"
 description = "Specifications for callback functions passed in to an API"
@@ -119,6 +127,22 @@ tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 [package.extras]
 argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
+
+[[package]]
+name = "django-money"
+version = "3.1.0"
+description = "Adds support for using money and currency fields in django models and forms. Uses py-moneyed as the money implementation."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+Django = ">=2.2"
+py-moneyed = ">=2.0,<3.0"
+
+[package.extras]
+exchange = ["certifi"]
+test = ["pytest (>=3.1.0)", "pytest-django", "pytest-pythonpath", "pytest-cov", "mixer", "mypy", "django-stubs"]
 
 [[package]]
 name = "djangorestframework"
@@ -389,6 +413,22 @@ python-versions = "*"
 tests = ["pytest"]
 
 [[package]]
+name = "py-moneyed"
+version = "2.0"
+description = "Provides Currency and Money classes for use in your Python code."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+babel = ">=2.8.0"
+typing-extensions = ">=3.7.4.3"
+
+[package.extras]
+tests = ["pytest (>=2.3.0)", "tox (>=1.6.0)"]
+type-tests = ["pytest (>=2.3.0)", "pytest-mypy-plugins", "mypy (>=0.812)"]
+
+[[package]]
 name = "pycodestyle"
 version = "2.10.0"
 description = "Python style guide checker"
@@ -514,6 +554,14 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
+name = "typing-extensions"
+version = "4.5.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "tzdata"
 version = "2023.3"
 description = "Provider of IANA time zone data"
@@ -540,19 +588,21 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "af2849618b03fc2b5fa7c5d5e568f8b31da0ce4492a778eb4584bd85244c7c8e"
+content-hash = "b7260f220dd69033289685b5b9cff57b5ab3d85189f21434d1df54b902095afe"
 
 [metadata.files]
 appnope = []
 asgiref = []
 asttokens = []
 attrs = []
+babel = []
 backcall = []
 black = []
 click = []
 colorama = []
 decorator = []
 django = []
+django-money = []
 djangorestframework = []
 djangorestframework-simplejwt = []
 drf-spectacular = []
@@ -574,6 +624,7 @@ prompt-toolkit = []
 psycopg2-binary = []
 ptyprocess = []
 pure-eval = []
+py-moneyed = []
 pycodestyle = []
 pygments = []
 pyjwt = []
@@ -586,6 +637,7 @@ sqlparse = []
 stack-data = []
 tomli = []
 traitlets = []
+typing-extensions = []
 tzdata = []
 uritemplate = []
 wcwidth = []
