@@ -17,6 +17,13 @@ class Order(models.Model):
     status = models.CharField(
         max_length=16, choices=StatusChoices.choices, default=StatusChoices.received
     )
-    updated_at = models.DateTimeField()
-    ordered_at = models.DateTimeField()
+    updated_at = models.DateTimeField(auto_now=True)
+    ordered_at = models.DateTimeField(auto_now_add=True)
     price_total = MoneyField(max_digits=19, decimal_places=4, default_currency="BRL")
+
+
+class ProductsOrders(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    product_id = models.ForeignKey("products.Product", on_delete=models.CASCADE)
+    order_id = models.ForeignKey("orders.Order", on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
