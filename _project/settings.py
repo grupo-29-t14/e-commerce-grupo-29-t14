@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 dotenv.load_dotenv()
-SECRET_KEY = dotenv.getenv("SECRET_KEY", "r4nd0md3pl0y")
+SECRET_KEY = os.getenv("SECRET_KEY", "r4nd0md3pl0y")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
