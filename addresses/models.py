@@ -11,3 +11,4 @@ class Address(models.Model):
     district = models.CharField(max_length=50)
     street = models.CharField(max_length=50)
     number = models.CharField(max_length=10)
+    zip_code = models.CharField(max_length=10)
