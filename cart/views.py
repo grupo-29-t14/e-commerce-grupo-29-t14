@@ -27,4 +27,4 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
         return serializer.save(buyer=self.request.user)
 
     def get_object(self):
-        return self.queryset.get(buyer_id=self.request.user.pk)
+        return self.queryset.get(buyer_id=self.request.user.id)
