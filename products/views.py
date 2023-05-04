@@ -1,30 +1,24 @@
-from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework import viewsets
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .permissions import IsAuthenticated, IsOwnerOrAdmin
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwnerOrAdmin, IsOwner
 
-class ProductGetView(ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-class ProductCreateView(CreateAPIView):
+class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update']:
+            self.permission_classes = [IsOwner]
+        elif self.action == 'destroy':
+            self.permission_classes = [IsOwnerOrAdmin]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super(ProductViewSet, self).get_permissions()
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(seller=self.request.user)
 
-class ProductUpdateView(UpdateAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsOwnerOrAdmin]
-
-class ProductDeleteView(DestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsOwnerOrAdmin]

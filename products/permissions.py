@@ -1,9 +1,15 @@
 from rest_framework import permissions
 
 class IsOwnerOrAdmin(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user == obj.owner or request.user.is_superuser
+    message = "Você não tem permissão para realizar esta operação."
+    
+    def has_object_permission(self, request,view, obj):
+        return request.user == obj.seller or request.user.is_superuser
 
-class IsAuthenticated(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
+from rest_framework import permissions
+
+class IsOwner(permissions.BasePermission):
+    message = "Apenas o dono pode alterar as informações do produto."
+
+    def has_object_permission(self, request, view, obj):
+        return obj.seller == request.user
