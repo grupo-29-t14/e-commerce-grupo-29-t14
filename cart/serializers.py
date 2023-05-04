@@ -13,7 +13,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Cart
-        fields = ["id", "buyer_id"]
+        fields = ["id", "buyer_id", "products"]
 
         extra_kwargs = {
             "buyer_id": {"read_only": True},

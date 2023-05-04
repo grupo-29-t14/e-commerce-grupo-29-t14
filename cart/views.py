@@ -4,12 +4,14 @@ from . import models
 from . import serializers
 
 
-class CartView(generics.CreateAPIView):
+class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
     queryset = models.Cart.objects.all()
     serializer_class = serializers.CartSerializer
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+
+    lookup_field = "buyer_id"
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -23,3 +25,6 @@ class CartView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         return serializer.save(buyer=self.request.user)
+
+    def get_object(self):
+        return self.queryset.get(buyer_id=self.request.user.pk)
