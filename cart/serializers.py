@@ -25,3 +25,4 @@ class CartSerializer(serializers.ModelSerializer):
 class CartProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CartProducts
+        fields = "__all__"
