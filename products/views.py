@@ -4,7 +4,7 @@ from .serializers import ProductSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import IsAuthenticated, IsOwnerOrAdmin
 
-class ProductView(ListAPIView):
+class ProductGetView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
