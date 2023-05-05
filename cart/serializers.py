@@ -33,7 +33,9 @@ class CartProductSerializer(serializers.ModelSerializer):
         product = validated_data["product"]
         exists = cart.filter(products__product=product.id).values()
         quantity = (
-            validated_data.get("quantity") if validated_data.get("quantity") else 1
+            validated_data.get("quantity")
+            if validated_data.get("quantity") and validated_data.get("quantity") > 0
+            else 1
         )
 
         if exists:
