@@ -3,3 +3,4 @@
 **cache**
 db.sqlite3
 .vscode
+poetry.lock
