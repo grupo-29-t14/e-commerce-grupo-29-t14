@@ -28,6 +28,24 @@ class CartProductSerializer(serializers.ModelSerializer):
         default=1, max_digits=19, decimal_places=4, default_currency="BRL"
     )
 
+    def create(self, validated_data):
+        cart = models.Cart.objects.filter(pk=validated_data["cart"].id)
+        product = validated_data["product"]
+        exists = cart.filter(products__product=product.id).values()
+
+        if exists:
+            found_product = models.CartProducts.objects.filter(
+                cart_id=exists[0]["id"], cart__buyer_id=exists[0]["buyer_id"]
+            ).first()
+
+            found_product.price += found_product.price / found_product.quantity
+            found_product.quantity += 1
+
+            found_product.save()
+            return found_product
+
+        return super().create(validated_data)
+
     def update(self, instance: models.CartProducts, validated_data: dict):
         if self.initial_data.get("operation") == "sum":
             instance.price += instance.price / instance.quantity
