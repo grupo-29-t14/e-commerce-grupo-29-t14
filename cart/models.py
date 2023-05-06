@@ -1,5 +1,8 @@
+from typing import Any
 from django.db import models
+from djmoney.models.fields import MoneyField
 import uuid
+from products.models import Product
 
 
 class Cart(models.Model):
@@ -15,5 +18,10 @@ class CartProducts(models.Model):
         "products.Product",
         on_delete=models.CASCADE,
     )
-    cart_id = models.ForeignKey("cart.Cart", on_delete=models.CASCADE)
+    cart = models.ForeignKey(
+        "cart.Cart", on_delete=models.CASCADE, related_name="products"
+    )
     quantity = models.IntegerField(default=1)
+    price = MoneyField(
+        default=1, max_digits=19, decimal_places=4, default_currency="BRL"
+    )
