@@ -12,6 +12,13 @@ class CartSerializer(serializers.ModelSerializer):
         ]
     )
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        products = response.get("products")
+        for cart in products:
+            cart.pop("cart")
+        return response
+
     class Meta:
         model = models.Cart
         fields = ["id", "buyer_id", "products"]
