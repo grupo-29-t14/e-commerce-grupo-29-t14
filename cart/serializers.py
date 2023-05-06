@@ -69,7 +69,7 @@ class CartProductSerializer(serializers.ModelSerializer):
             instance.quantity += 1
             instance.save()
 
-        elif instance.quantity - 1 == 0:
+        elif instance.quantity - 1 <= 0:
             instance.delete()
 
         else:
