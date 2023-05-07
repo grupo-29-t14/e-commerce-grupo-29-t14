@@ -30,7 +30,7 @@ class UserView(generics.ListCreateAPIView):
             return User.objects.all()
 
         return User.objects.filter(is_seller=True, is_active=True)
-    
+
     @extend_schema(
         operation_id="users_list",
         responses={200: UserSerializer},
@@ -93,28 +93,16 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
-    def perform_update(self, serializer):
-        if self.request.user.is_superuser is False and serializer.validated_data.get(
-            "is_seller"
-        ):
-            serializer.validated_data.pop("is_seller", None)
-
-        return super().perform_update(serializer)
-    
     @extend_schema(
         operation_id="retrieve_user",
         responses={200: UserSerializer},
         description="Route for retrieving a user",
         summary="User Retrieval",
-        tags=["Users"]
+        tags=["Users"],
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-    
-    @extend_schema(
-        operation_id="deprecated_route",
-        tags=["Users"],
-        deprecated=True
-    )
+
+    @extend_schema(operation_id="deprecated_route", tags=["Users"], deprecated=True)
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
