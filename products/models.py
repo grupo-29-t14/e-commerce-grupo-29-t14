@@ -37,3 +37,7 @@ class Product(models.Model):
     stock = models.IntegerField(default=1, validators=[MinValueValidator(0)])
     price = MoneyField(max_digits=19, decimal_places=4, default_currency="BRL")
     available = models.BooleanField(default=True)
+    image = models.CharField(
+        max_length=500,
+        default="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png",
+    )
