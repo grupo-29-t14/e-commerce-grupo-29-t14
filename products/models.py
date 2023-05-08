@@ -3,6 +3,7 @@ import uuid
 from djmoney.models.fields import MoneyField
 from django.core.validators import MinValueValidator
 
+
 class CategoryChoices(models.TextChoices):
     T_SHIRTS = "Camisetas"
     SHIRTS = "Camisas"
@@ -35,3 +36,4 @@ class Product(models.Model):
     category = models.CharField(max_length=50, choices=CategoryChoices.choices)
     stock = models.IntegerField(default=1, validators=[MinValueValidator(0)])
     price = MoneyField(max_digits=19, decimal_places=4, default_currency="BRL")
+    available = models.BooleanField(default=True)

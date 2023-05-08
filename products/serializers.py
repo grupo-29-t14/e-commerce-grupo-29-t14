@@ -7,22 +7,29 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ("id", "seller", "name", "category", "stock", "price")
+        fields = ("id", "seller", "name", "category", "stock", "price", "available")
 
     def validate(self, data):
         if not data:
-        
-            raise serializers.ValidationError("Nenhum dado enviado ou os dados enviados são inválidos. Revisar a requisição.")
-        
-        
-        if self.instance is None:  
+            raise serializers.ValidationError(
+                "Nenhum dado enviado ou os dados enviados são inválidos. Revisar a requisição."
+            )
+
+        if self.instance is None:
             already_exists = Product.objects.filter(
-                seller=self.context['request'].user,
-                name=data['name'],
-                category=data['category']
+                seller=self.context["request"].user,
+                name=data["name"],
+                category=data["category"],
             ).exists()
 
             if already_exists:
                 raise serializers.ValidationError("O produto já existe.")
-       
+
         return data
+
+    def update(self, instance, validated_data):
+        if validated_data.get("stock") <= 0:
+            instance.available = False
+        else:
+            instance.available = True
+        return super().update(instance, validated_data)
