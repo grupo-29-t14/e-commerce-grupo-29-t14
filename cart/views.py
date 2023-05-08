@@ -81,6 +81,28 @@ class ListAllCartsView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
+    @extend_schema(
+        operation_id="add_product_to_cart",
+        request=serializers.CartProductSerializer,
+        responses={201: serializers.CartProductSerializer},
+        description='Route for adding product to cart. Must send key-value pair "product": "id" to add product to cart',
+        summary="Add product to cart",
+        tags=["Cart Product"],
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="retrieve_product_from_cart",
+        request=serializers.CartProductSerializer,
+        responses={200: serializers.CartProductSerializer},
+        description='Route for retrieving product from cart. Must send key-value pair "product": "id" to retrieve product from cart',
+        summary="Retrieve product from cart",
+        tags=["Cart Product"],
+    )
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
     def get_queryset(self):
         if self.request.user.is_superuser:
             return models.Cart.objects.all()
