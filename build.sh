@@ -1,5 +1,5 @@
 set -o errexit
 
-poetry install -r requirements.txt
+pip install 
 python manage.py collectstatic --no-input
 python manage.py migrate
