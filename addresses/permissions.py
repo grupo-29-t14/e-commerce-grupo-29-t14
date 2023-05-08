@@ -4,6 +4,13 @@ from .models import Address
 
 class AddressPermisson(permissions.BasePermission):
     def has_permission(self, request, view):
+
+        if request.method != "PATCH" and request.method != "GET":
+            return True
+
+        if request.user.is_superuser:
+            return True
+
         user_id = request.user.id
         address = Address.objects.filter(user_id=user_id)
 
@@ -19,3 +26,20 @@ class AddressPermisson(permissions.BasePermission):
         if index != -1:
             return True
 
+
+class createAddressPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            return True
+
+        if request.user.is_superuser:
+            return True
+
+        user_id = request.user.id
+
+        path_request = str(request.get_full_path())
+
+        index = path_request.find(str(user_id))
+
+        if index != -1:
+            return True

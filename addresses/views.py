@@ -2,24 +2,24 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .models import Address
 from .serializers import AddressSerializer
-from rest_framework.generics import ListCreateAPIView, UpdateAPIView
-from .permissions import AddressPermisson
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView
+from .permissions import AddressPermisson, createAddressPermission
 
 
-class AddressView(ListCreateAPIView):
+class AddressView(CreateAPIView, RetrieveAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, AddressPermisson, createAddressPermission]
 
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
     def perform_create(self, serializer):
-        user_id = self.request.user
-        return serializer.save(user=user_id)
+        kwargs = self.kwargs
+        serializer.save(user_id=kwargs["pk"])
 
     def get_queryset(self):
-        user_id = self.request.user.id
-        return Address.objects.filter(user_id=user_id)
+        kwargs = self.kwargs
+        return Address.objects.filter(id=kwargs["pk"])
 
 
 class UpdateAddressView(UpdateAPIView):
