@@ -12,6 +12,13 @@ class CartSerializer(serializers.ModelSerializer):
         ]
     )
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        products = response.get("products")
+        for cart in products:
+            cart.pop("cart")
+        return response
+
     class Meta:
         model = models.Cart
         fields = ["id", "buyer_id", "products"]
@@ -32,17 +39,27 @@ class CartProductSerializer(serializers.ModelSerializer):
         cart = models.Cart.objects.filter(pk=validated_data["cart"].id)
         product = validated_data["product"]
         exists = cart.filter(products__product=product.id).values()
+        quantity = (
+            validated_data.get("quantity")
+            if validated_data.get("quantity") and validated_data.get("quantity") > 0
+            else 1
+        )
 
         if exists:
             found_product = models.CartProducts.objects.filter(
                 cart_id=exists[0]["id"], cart__buyer_id=exists[0]["buyer_id"]
             ).first()
 
-            found_product.price += found_product.price / found_product.quantity
-            found_product.quantity += 1
+            single_prince = found_product.price / found_product.quantity
+            found_product.quantity += quantity
+            found_product.price = single_prince * found_product.quantity
 
             found_product.save()
             return found_product
+
+        else:
+            validated_data["price"] = validated_data["price"] * quantity
+            self.is_valid()
 
         return super().create(validated_data)
 
@@ -52,7 +69,7 @@ class CartProductSerializer(serializers.ModelSerializer):
             instance.quantity += 1
             instance.save()
 
-        elif instance.quantity - 1 == 0:
+        elif instance.quantity - 1 <= 0:
             instance.delete()
 
         else:

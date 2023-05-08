@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from products.models import Product
 from . import models
 from . import serializers
@@ -45,3 +46,14 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
         return serializer.save(
             cart=self.request.user.cart, price=obj.price, product=obj
         )
+
+    @extend_schema(
+        operation_id="partial_update_cart_product",
+        request=serializers.CartProductSerializer,
+        responses={200: serializers.CartProductSerializer},
+        description='Route for updating quantity on product. Must send key-value pair "operation": "sum" to increase quantity',
+        summary="Update quantity on cart_product",
+        tags=["cart_product"],
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
