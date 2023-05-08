@@ -3,7 +3,7 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .permissions import IsOwnerOrAdmin, IsOwner, IsNotAdmin
+from .permissions import IsOwnerOrAdmin, IsOwner, IsSeller
 from drf_spectacular.utils import extend_schema
 from djmoney.money import Money
 
@@ -19,7 +19,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         elif self.action == "destroy":
             self.permission_classes = [IsOwnerOrAdmin]
         elif self.action == "create":
-            self.permission_classes = [IsNotAdmin]
+            self.permission_classes = [IsSeller]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(ProductViewSet, self).get_permissions()
