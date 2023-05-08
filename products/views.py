@@ -81,7 +81,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        operation_id="delete_product", 
+        operation_id="delete_product",
         responses={204: ProductSerializer(many=False)},
         description="Delete product",
         summary="Delete product",
@@ -89,4 +89,3 @@ class ProductViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-    
