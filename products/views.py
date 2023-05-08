@@ -5,6 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrAdmin, IsOwner, IsNotAdmin
 from drf_spectacular.utils import extend_schema
+from djmoney.money import Money
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -39,6 +40,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         category_parameter = self.request.query_params.get("category")
         name_parameter = self.request.query_params.get("name")
+        price_parameter = self.request.query_params.get("price")
 
         if category_parameter:
             queryset = Product.objects.filter(
@@ -57,6 +59,10 @@ class ProductViewSet(viewsets.ModelViewSet):
                 category__contains=category_parameter,
                 name__contains=name_parameter,
             )
+            return queryset
+
+        if price_parameter:
+            queryset = Product.objects.filter(price__lte=Money(price_parameter, "BRL"))
             return queryset
 
         return super().get_queryset()
