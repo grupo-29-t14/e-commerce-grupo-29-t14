@@ -31,12 +31,10 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
         return serializer.save(buyer=self.request.user)
 
     def get_object(self):
-        return self.queryset.get(buyer_id=self.request.user.id)
-
-    def get_queryset(self):
         if self.request.user.is_superuser:
-            return models.Cart.objects.all()
-        return models.Cart.objects.filter(buyer=self.request.user)
+            return self.queryset.get(buyer_id=self.request.user.id)
+        return self.queryset.filter(buyer=self.request.user).first()
+
 
 class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIView):
     queryset = models.CartProducts
@@ -80,7 +78,10 @@ class ListAllCartsView(generics.ListAPIView):
             cart_id = request.query_params.get('id')
             if cart_id:
                 queryset = self.get_queryset().filter(id=cart_id)
-                serializer = self.get_serializer(queryset, many=True)
-                return response.Response(serializer.data)
+                instance = queryset.first()  # Get the first item from the queryset
+                if instance:
+                    serializer = self.get_serializer(instance)
+                    return response.Response(serializer.data)
+                return response.Response(status=404, data={"detail": "Cart not found."})
             return super().list(request, *args, **kwargs)
         return response.Response(status=403, data={"detail": "You do not have permission to perform this action."})
