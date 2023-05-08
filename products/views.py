@@ -36,6 +36,31 @@ class ProductViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    def get_queryset(self):
+        category_parameter = self.request.query_params.get("category")
+        name_parameter = self.request.query_params.get("name")
+
+        if category_parameter:
+            queryset = Product.objects.filter(
+                category__contains=category_parameter,
+            )
+            return queryset
+
+        if name_parameter:
+            queryset = Product.objects.filter(
+                name__contains=name_parameter,
+            )
+            return queryset
+
+        if category_parameter and name_parameter:
+            queryset = Product.objects.filter(
+                category__contains=category_parameter,
+                name__contains=name_parameter,
+            )
+            return queryset
+
+        return super().get_queryset()
+
     @extend_schema(
         operation_id="get_product_by_id",
         responses={200: ProductSerializer(many=False)},
@@ -81,7 +106,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        operation_id="delete_product", 
+        operation_id="delete_product",
         responses={204: ProductSerializer(many=False)},
         description="Delete product",
         summary="Delete product",
@@ -89,4 +114,3 @@ class ProductViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-    
