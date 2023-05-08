@@ -78,7 +78,7 @@ class ListAllCartsView(generics.ListAPIView):
             cart_id = request.query_params.get('id')
             if cart_id:
                 queryset = self.get_queryset().filter(id=cart_id)
-                instance = queryset.first()  # Get the first item from the queryset
+                instance = queryset.first() 
                 if instance:
                     serializer = self.get_serializer(instance)
                     return response.Response(serializer.data)
