@@ -85,7 +85,7 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
-    
+
     @extend_schema(
         operation_id="retrieve_product_from_cart",
         request=serializers.CartProductSerializer,
