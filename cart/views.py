@@ -35,6 +35,21 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
             return self.queryset.get(buyer_id=self.request.user.id)
         return self.queryset.filter(buyer=self.request.user).first()
 
+    @extend_schema(deprecated=True, tags=["Cart"])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="create_cart",
+        request=serializers.CartSerializer,
+        responses={201: serializers.CartSerializer},
+        description='Route for creating cart. Must send key-value pair "buyer_id": "id" to create cart',
+        summary="Create cart",
+        tags=["Cart"],
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIView):
     queryset = models.CartProducts
@@ -46,9 +61,7 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     def perform_create(self, serializer):
         obj = get_object_or_404(Product, id=self.request.data.get("product"))
 
-        return serializer.save(
-            cart=self.request.user.cart, price=obj.price, product=obj
-        )
+        return serializer.save(cart=self.request.user.cart, price=obj.price, product=obj)
 
     @extend_schema(
         operation_id="partial_update_cart_product",
@@ -56,7 +69,7 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
         responses={200: serializers.CartProductSerializer},
         description='Route for updating quantity on product. Must send key-value pair "operation": "sum" to increase quantity',
         summary="Update quantity on cart_product",
-        tags=["cart_product"],
+        tags=["Cart Product"],
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
