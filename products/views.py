@@ -38,31 +38,25 @@ class ProductViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        category_parameter = self.request.query_params.get("category")
-        name_parameter = self.request.query_params.get("name")
-        price_parameter = self.request.query_params.get("price")
-
-        if category_parameter:
-            queryset = Product.objects.filter(
-                category__contains=category_parameter,
-            )
-            return queryset
-
-        if name_parameter:
-            queryset = Product.objects.filter(
-                name__contains=name_parameter,
-            )
-            return queryset
-
-        if category_parameter and name_parameter:
-            queryset = Product.objects.filter(
-                category__contains=category_parameter,
-                name__contains=name_parameter,
-            )
-            return queryset
+        category_parameter = self.request.query_params.get("category", "")
+        name_parameter = self.request.query_params.get("name", "")
+        price_parameter = self.request.query_params.get("price", "")
 
         if price_parameter:
             queryset = Product.objects.filter(price__lte=Money(price_parameter, "BRL"))
+            return queryset
+
+        if category_parameter or name_parameter:
+            queryset = Product.objects.filter(
+                category__contains=category_parameter,
+                name__contains=name_parameter,
+            )
+            if price_parameter:
+                queryset = Product.objects.filter(
+                    category__contains=category_parameter,
+                    name__contains=name_parameter,
+                    price__lte=Money(price_parameter, "BRL"),
+                )
             return queryset
 
         return super().get_queryset()
