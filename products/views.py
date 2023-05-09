@@ -5,6 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrAdmin, IsOwner, IsSeller
 from drf_spectacular.utils import extend_schema
+from drf_spectacular.openapi import OpenApiParameter, OpenApiTypes
 from djmoney.money import Money
 
 
@@ -28,10 +29,30 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.save(seller=self.request.user)
 
     @extend_schema(
-        operation_id="get_all_products",
+        operation_id="Retrieve_a_list_of_products",
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Name of the product",
+            ),
+            OpenApiParameter(
+                name="category",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Category of the product",
+            ),
+            OpenApiParameter(
+                name="price",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Maximum price of the product",
+            ),
+        ],
         responses={200: ProductSerializer(many=True)},
-        description="Get all products",
-        summary="Get all products",
+        description="Retrieve all profucts or a list of products by name, category or price",
+        summary="Retrieve a list of products",
         tags=["Products"],
     )
     def list(self, request, *args, **kwargs):
