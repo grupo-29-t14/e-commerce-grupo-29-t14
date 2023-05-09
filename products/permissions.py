@@ -8,11 +8,11 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         return request.user == obj.seller or request.user.is_superuser
 
 
-class IsNotAdmin(permissions.BasePermission):
+class IsSeller(permissions.BasePermission):
     # message = "Administradores não podem vender produtos nesta plataforma."
 
     def has_permission(self, request, view):
-        return not request.user.is_superuser and request.user.is_seller
+        return request.user.is_seller or request.user.is_superuser
 
 
 class IsOwner(permissions.BasePermission):
