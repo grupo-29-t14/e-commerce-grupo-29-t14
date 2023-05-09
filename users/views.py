@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.response import Response
 from users.serializers import UserSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -7,6 +7,7 @@ from .permissions import IsAdminOrAccountOwner
 from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.shortcuts import get_object_or_404
 
 
 @extend_schema(
@@ -103,6 +104,23 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-    @extend_schema(operation_id="deprecated_route", tags=["Users"], deprecated=True)
+    @extend_schema(
+        operation_id="Reactivate user",
+        responses={
+            200: {"message": "User activated"},
+            400: {"message": "User already active"},
+        },
+        description="Route for reactivating a user",
+        summary="Admin only - User Reactivation",
+        tags=["Users"],
+    )
     def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
+        self.permission_classes = [permissions.IsAdminUser]
+        user_to = get_object_or_404(User, pk=kwargs["pk"])
+        if user_to.is_active:
+            return Response(data={"message": "User already active"}, status=400)
+
+        user_to.is_active = True
+        user_to.save()
+
+        return Response(data={"message": "User activated"}, status=200)
