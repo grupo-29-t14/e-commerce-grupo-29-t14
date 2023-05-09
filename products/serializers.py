@@ -25,6 +25,11 @@ class ProductSerializer(serializers.ModelSerializer):
             if already_exists:
                 raise serializers.ValidationError("O produto já existe.")
 
+        stock = data.get("stock")
+
+        if stock is not None and stock <= 0:
+            raise serializers.ValidationError("Minimum stock is 1")
+
         return data
 
     def update(self, instance, validated_data):
