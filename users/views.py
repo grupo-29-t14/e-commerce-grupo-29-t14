@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
 from rest_framework.response import Response
 from users.serializers import UserSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -115,7 +115,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         tags=["Users"],
     )
     def put(self, request, *args, **kwargs):
-        self.permission_classes = [permissions.IsAdminUser]
+        self.authentication_classes = [JWTAuthentication]
+
+        if not self.request.user.is_staff:
+            return Response(
+                status=400,
+                data={"detail": "You do not have permission to perform this action."},
+            )
+
         user_to = get_object_or_404(User, pk=kwargs["pk"])
         if user_to.is_active:
             return Response(data={"message": "User already active"}, status=400)
