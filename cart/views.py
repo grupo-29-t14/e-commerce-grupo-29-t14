@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema
 from products.models import Product
 from . import models
 from . import serializers
+from .permissions import IsAdminOrCartOwner
 
 
 class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
@@ -12,7 +13,7 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
     serializer_class = serializers.CartSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
     lookup_field = "buyer_id"
 
@@ -30,7 +31,9 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
         return serializer.save(buyer=self.request.user)
 
     def get_object(self):
-        return self.queryset.get(buyer_id=self.request.user.id)
+        if self.request.user.is_superuser:
+            return self.queryset.get(buyer_id=self.request.user.id)
+        return self.queryset.filter(buyer=self.request.user).first()
 
     @extend_schema(deprecated=True, tags=["Cart"])
     def get(self, request, *args, **kwargs):
@@ -53,27 +56,12 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     serializer_class = serializers.CartProductSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
     def perform_create(self, serializer):
         obj = get_object_or_404(Product, id=self.request.data.get("product"))
 
         return serializer.save(cart=self.request.user.cart, price=obj.price, product=obj)
-
-    @extend_schema(
-        operation_id="partial_update_cart_product",
-        request=serializers.CartProductSerializer,
-        responses={200: serializers.CartProductSerializer},
-        description='Route for updating quantity on product. Must send key-value pair "operation": "sum" to increase quantity',
-        summary="Update quantity on cart_product",
-        tags=["Cart Product"],
-    )
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
-
-    @extend_schema(deprecated=True, tags=["Cart Product"])
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
 
     @extend_schema(
         operation_id="add_product_to_cart",
@@ -87,23 +75,71 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
         return super().post(request, *args, **kwargs)
 
     @extend_schema(
-        operation_id="retrieve_product_from_cart",
+        operation_id="retrieve_cart_product",
         request=serializers.CartProductSerializer,
         responses={200: serializers.CartProductSerializer},
-        description='Route for retrieving product from cart. Must send key-value pair "product": "id" to retrieve product from cart',
-        summary="Retrieve product from cart",
+        description='Route for retrieving cart_product. Must send key-value pair "id": "id" to retrieve cart_product',
+        summary="Retrieve cart_product",
         tags=["Cart Product"],
     )
     def get(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="partial_update_cart_product",
+        request=serializers.CartProductSerializer,
+        responses={200: serializers.CartProductSerializer},
+        description='Route for updating quantity on product. Must send key-value pair "operation": "sum" to increase quantity',
+        summary="Update quantity on cart_product",
+        tags=["Cart Product"],
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(operation_id="deprecated update_cart_product route", deprecated=True, tags=["Cart Product"])
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
 
     @extend_schema(
         operation_id="delete_cart_product",
         request=serializers.CartProductSerializer,
-        responses={204: serializers.CartProductSerializer},
-        description='Route for deleting product from cart. Must send key-value pair "product": "id" to delete product from cart',
-        summary="Delete product from cart",
+        responses={204: None},
+        description='Route for deleting cart_product. Must send key-value pair "id": "id" to delete cart_product',
+        summary="Delete cart_product",
         tags=["Cart Product"],
     )
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
+
+
+@extend_schema(
+    operation_id="list_all_carts_only_by_admin",
+    responses={200: serializers.CartSerializer},
+    description='Route for listing all carts. Must send key-value of a admin user: "id" to retrieve cart',
+    summary="List all carts",
+    tags=["Cart"],
+)
+class ListAllCartsView(generics.ListAPIView):
+    queryset = models.Cart.objects.all()
+    serializer_class = serializers.CartSerializer
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return models.Cart.objects.all()
+        return models.Cart.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            cart_id = request.query_params.get("id")
+            if cart_id:
+                queryset = self.get_queryset().filter(id=cart_id)
+                instance = queryset.first()
+                if instance:
+                    serializer = self.get_serializer(instance)
+                    return response.Response(serializer.data)
+                return response.Response(status=404, data={"detail": "Cart not found."})
+            return super().list(request, *args, **kwargs)
+        return response.Response(status=403, data={"detail": "You do not have permission to perform this action."})

@@ -1,3 +1,8 @@
+from django.core.management import call_command
+from django.core.management.base import CommandError
+import json
+from rest_framework.views import APIView
+from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from users.serializers import UserSerializer
@@ -106,3 +111,38 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     @extend_schema(operation_id="deprecated_route", tags=["Users"], deprecated=True)
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
+
+
+class CreateAdminView(APIView):
+    @extend_schema(
+        operation_id="create_admin",
+        description="Route for creating a new admin for testing purposes. Username is 'admin', password is 'admin1234'",
+        tags=["Users"],
+        # exclude=True
+    )
+    def post(self, request, *args, **kwargs):
+        admin_username = "admin"
+        admin_password = "admin1234"
+        admin_email = f"{admin_username}@example.com"
+
+        if request.body:
+            data = json.loads(request.body)
+            admin_username = data.get("username", admin_username)
+            admin_password = data.get("password", admin_password)
+            admin_email = data.get("email", admin_email)
+
+        check_username = User.objects.filter(username=admin_username).first()
+        check_email = User.objects.filter(email=admin_email).first()
+
+        if check_username:
+            return JsonResponse({"error": f"Username '{check_username.username}' already taken."}, status=400)
+        if check_email:
+            return JsonResponse({"error": f"Email '{check_email.email}' already taken."}, status=400)
+
+        options = {"username": admin_username, "password": admin_password, "email": admin_email}
+
+        try:
+            call_command("create_admin", **options)
+            return JsonResponse({"message": "Superuser created successfully!"}, status=201)
+        except CommandError as e:
+            return JsonResponse({"error": str(e)}, status=400)
