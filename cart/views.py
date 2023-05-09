@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema
 from products.models import Product
 from . import models
 from . import serializers
+from .permissions import IsAdminOrCartOwner
 
 
 class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
@@ -12,7 +13,7 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
     serializer_class = serializers.CartSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
     lookup_field = "buyer_id"
 
@@ -30,7 +31,9 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
         return serializer.save(buyer=self.request.user)
 
     def get_object(self):
-        return self.queryset.get(buyer_id=self.request.user.id)
+        if self.request.user.is_superuser:
+            return self.queryset.get(buyer_id=self.request.user.id)
+        return self.queryset.filter(buyer=self.request.user).first()
 
     @extend_schema(deprecated=True, tags=["Cart"])
     def get(self, request, *args, **kwargs):
@@ -53,7 +56,7 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     serializer_class = serializers.CartProductSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
     def perform_create(self, serializer):
         obj = get_object_or_404(Product, id=self.request.data.get("product"))
@@ -71,9 +74,12 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
-    @extend_schema(deprecated=True, tags=["Cart Product"])
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
+class ListAllCartsView(generics.ListAPIView):
+    queryset = models.Cart.objects.all()
+    serializer_class = serializers.CartSerializer
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCartOwner]
 
     @extend_schema(
         operation_id="add_product_to_cart",
@@ -97,13 +103,20 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @extend_schema(
-        operation_id="delete_cart_product",
-        request=serializers.CartProductSerializer,
-        responses={204: serializers.CartProductSerializer},
-        description='Route for deleting product from cart. Must send key-value pair "product": "id" to delete product from cart',
-        summary="Delete product from cart",
-        tags=["Cart Product"],
-    )
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return models.Cart.objects.all()
+        return models.Cart.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            cart_id = request.query_params.get('id')
+            if cart_id:
+                queryset = self.get_queryset().filter(id=cart_id)
+                instance = queryset.first() 
+                if instance:
+                    serializer = self.get_serializer(instance)
+                    return response.Response(serializer.data)
+                return response.Response(status=404, data={"detail": "Cart not found."})
+            return super().list(request, *args, **kwargs)
+        return response.Response(status=403, data={"detail": "You do not have permission to perform this action."})
