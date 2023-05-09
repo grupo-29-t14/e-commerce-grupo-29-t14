@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.core.validators import MinValueValidator
 
 
 class Address(models.Model):
@@ -10,5 +11,5 @@ class Address(models.Model):
     city = models.CharField(max_length=50)
     district = models.CharField(max_length=50)
     street = models.CharField(max_length=50)
-    number = models.CharField(max_length=10)
-    zip_code = models.CharField(max_length=10)
+    number = models.IntegerField(validators=[MinValueValidator(0)])
+    zip_code = models.IntegerField(validators=[MinValueValidator(0)])
