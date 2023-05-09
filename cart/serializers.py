@@ -1,6 +1,7 @@
 from rest_framework import serializers, validators
 from djmoney.contrib.django_rest_framework import MoneyField
 from . import models
+from products.models import Product
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -44,6 +45,7 @@ class CartProductSerializer(serializers.ModelSerializer):
             if validated_data.get("quantity") and validated_data.get("quantity") > 0
             else 1
         )
+        current_stock = Product.objects.filter(id=product.id).first().stock
 
         if exists:
             found_product = models.CartProducts.objects.filter(
@@ -54,12 +56,22 @@ class CartProductSerializer(serializers.ModelSerializer):
             found_product.quantity += quantity
             found_product.price = single_prince * found_product.quantity
 
+            if found_product.quantity > current_stock:
+                raise serializers.ValidationError(
+                    detail={"message": "Product has not enough stock"}
+                )
+
             found_product.save()
             return found_product
 
         else:
             validated_data["price"] = validated_data["price"] * quantity
             self.is_valid()
+
+        if validated_data.get("quantity", 0) > current_stock:
+            raise serializers.ValidationError(
+                detail={"message": "Product has not enough stock"}
+            )
 
         return super().create(validated_data)
 

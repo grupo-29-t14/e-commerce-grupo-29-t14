@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost"]
 
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 
@@ -115,7 +115,9 @@ DATABASES = {
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
+    db_from_env = dj_database_url.config(
+        default=DATABASE_URL, conn_max_age=500, ssl_require=True
+    )
     DATABASES["default"].update(db_from_env)
 
     DEBUG = False
