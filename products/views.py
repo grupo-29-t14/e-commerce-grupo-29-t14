@@ -3,8 +3,9 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .permissions import IsOwnerOrAdmin, IsOwner, IsNotAdmin
+from .permissions import IsOwnerOrAdmin, IsOwner, IsSeller
 from drf_spectacular.utils import extend_schema
+from djmoney.money import Money
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -18,7 +19,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         elif self.action == "destroy":
             self.permission_classes = [IsOwnerOrAdmin]
         elif self.action == "create":
-            self.permission_classes = [IsNotAdmin]
+            self.permission_classes = [IsSeller]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(ProductViewSet, self).get_permissions()
@@ -35,6 +36,30 @@ class ProductViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        category_parameter = self.request.query_params.get("category", "")
+        name_parameter = self.request.query_params.get("name", "")
+        price_parameter = self.request.query_params.get("price", "")
+
+        if price_parameter:
+            queryset = Product.objects.filter(price__lte=Money(price_parameter, "BRL"))
+            return queryset
+
+        if category_parameter or name_parameter:
+            queryset = Product.objects.filter(
+                category__contains=category_parameter,
+                name__contains=name_parameter,
+            )
+            if price_parameter:
+                queryset = Product.objects.filter(
+                    category__contains=category_parameter,
+                    name__contains=name_parameter,
+                    price__lte=Money(price_parameter, "BRL"),
+                )
+            return queryset
+
+        return super().get_queryset()
 
     @extend_schema(
         operation_id="get_product_by_id",
