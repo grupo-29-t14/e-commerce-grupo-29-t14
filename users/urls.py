@@ -10,4 +10,5 @@ urlpatterns = [
     path("users/cart/", cart_views.CartView.as_view()),
     path("users/cart/<str:pk>", cart_views.CartProductView.as_view()),
     path("users/<str:pk>/", views.UserDetailView.as_view()),
+    path('user/create_admin/', views.CreateAdminView.as_view(), name='create_superuser')
 ]
