@@ -36,6 +36,12 @@ class CartProductSerializer(serializers.ModelSerializer):
         default=1, max_digits=19, decimal_places=4, default_currency="BRL"
     )
 
+    def validate(self, attrs):
+        quantity = attrs.get("quantity")
+        if quantity is not None and quantity <= 0:
+            raise serializers.ValidationError("Minimum quantity is 1")
+        return super().validate(attrs)
+
     def create(self, validated_data):
         cart = models.Cart.objects.filter(pk=validated_data["cart"].id)
         product = validated_data["product"]
@@ -76,17 +82,22 @@ class CartProductSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance: models.CartProducts, validated_data: dict):
+        operation_quantity = (
+            validated_data.get("quantity") if validated_data.get("quantity") else 1
+        )
+        product_price = instance.price / instance.quantity
+
         if self.initial_data.get("operation") == "sum":
-            instance.price += instance.price / instance.quantity
-            instance.quantity += 1
+            instance.quantity += operation_quantity
+            instance.price += operation_quantity * product_price
             instance.save()
 
         elif instance.quantity - 1 <= 0:
             instance.delete()
 
         else:
-            instance.price -= instance.price / instance.quantity
-            instance.quantity -= 1
+            instance.quantity -= operation_quantity
+            instance.price -= operation_quantity * product_price
             instance.save()
 
         return instance
