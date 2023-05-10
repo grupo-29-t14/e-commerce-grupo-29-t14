@@ -134,3 +134,23 @@ class UpdateOrderView(UpdateAPIView):
         #     fail_silently=False
         # )
         serializer.save()
+
+
+class ListOrdersBySeller(ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    queryset = Order.objects.all()
+    serializer_class = ListOrderSerializer
+
+    def get_queryset(self):
+        kwargs = self.kwargs
+
+        seller_orders = Order.objects.filter(seller_id=kwargs["pk"])
+
+        seller_orders_list = list(seller_orders.values())
+
+        if len(seller_orders_list) == 0:
+            get_object_or_404(Order, seller_id=kwargs["pk"])
+
+        return seller_orders
