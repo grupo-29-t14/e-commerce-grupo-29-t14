@@ -95,6 +95,7 @@ class ListOrderView(ListAPIView):
 
     def get_queryset(self):
         kwargs = self.kwargs
+        get_object_or_404(Order, user_id=kwargs["pk"])
         return Order.objects.filter(user_id=kwargs["pk"])
 
 
