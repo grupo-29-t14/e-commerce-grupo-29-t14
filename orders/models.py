@@ -12,7 +12,10 @@ class StatusChoices(models.TextChoices):
 class Order(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="orders"
+        "users.User", on_delete=models.CASCADE, related_name="order_user"
+    )
+    seller = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="order_seller", null=True
     )
     status = models.CharField(
         max_length=16, choices=StatusChoices.choices, default=StatusChoices.received
@@ -27,3 +30,4 @@ class ProductsOrders(models.Model):
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
     order = models.ForeignKey("orders.Order", on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
+    price = MoneyField(default=1, max_digits=19, decimal_places=4, default_currency="BRL")
