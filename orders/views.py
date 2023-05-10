@@ -26,9 +26,11 @@ class OrderView(APIView):
         cart = get_object_or_404(Cart, buyer_id=user_id)
 
         cart_products = CartProducts.objects.filter(cart_id=cart)
-        get_object_or_404(CartProducts, cart_id=cart)
 
         cart_products_list = list(cart_products.values())
+
+        if len(cart_products_list) == 0:
+            Response({"detail": "Cart is empty"}, 404)
 
         user_orders = cart_products_list
 
@@ -74,6 +76,11 @@ class OrderView(APIView):
             for key, value in validated_data.items():
                 setattr(product, key, value)
                 product.save()
+
+            cart_user = CartProducts.objects.filter(cart_id=order["cart_id"])
+
+            for product in cart_user:
+                product.delete()
 
             return Response(serializer.data, 201)
 
