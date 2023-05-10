@@ -30,7 +30,7 @@ class OrderView(APIView):
         cart_products_list = list(cart_products.values())
 
         if len(cart_products_list) == 0:
-            Response({"detail": "Cart is empty"}, 404)
+            get_object_or_404(CartProducts, cart_id=cart)
 
         user_orders = cart_products_list
 
