@@ -22,7 +22,7 @@ urlpatterns = [
         "api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
     ),
     path("api/", include("addresses.urls")),
-
+    path("api/", include("orders.urls"))
     # path(
     #     "api/docs/redoc/",
     #     SpectacularRedocView.as_view(url_name="schema"),
