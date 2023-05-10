@@ -32,8 +32,8 @@ class CartView(generics.CreateAPIView, generics.RetrieveAPIView):
 
     def get_object(self):
         if self.request.user.is_superuser:
-            return self.queryset.get(buyer_id=self.request.user.id)
-        return self.queryset.filter(buyer=self.request.user).first()
+            return get_object_or_404(self.queryset, buyer_id=self.request.user.id)
+        return get_object_or_404(self.queryset, buyer=self.request.user)
 
     @extend_schema(deprecated=True, tags=["Cart"])
     def get(self, request, *args, **kwargs):
@@ -61,7 +61,9 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     def perform_create(self, serializer):
         obj = get_object_or_404(Product, id=self.request.data.get("product"))
 
-        return serializer.save(cart=self.request.user.cart, price=obj.price, product=obj)
+        return serializer.save(
+            cart=self.request.user.cart, price=obj.price, product=obj
+        )
 
     @extend_schema(
         operation_id="add_product_to_cart",
@@ -96,7 +98,11 @@ class CartProductView(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPIV
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
-    @extend_schema(operation_id="deprecated update_cart_product route", deprecated=True, tags=["Cart Product"])
+    @extend_schema(
+        operation_id="deprecated update_cart_product route",
+        deprecated=True,
+        tags=["Cart Product"],
+    )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
@@ -142,4 +148,7 @@ class ListAllCartsView(generics.ListAPIView):
                     return response.Response(serializer.data)
                 return response.Response(status=404, data={"detail": "Cart not found."})
             return super().list(request, *args, **kwargs)
-        return response.Response(status=403, data={"detail": "You do not have permission to perform this action."})
+        return response.Response(
+            status=403,
+            data={"detail": "You do not have permission to perform this action."},
+        )
