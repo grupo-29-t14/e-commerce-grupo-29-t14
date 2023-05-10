@@ -82,7 +82,14 @@ class OrderView(APIView):
             for product in cart_user:
                 product.delete()
 
-            return Response(serializer.data, 201)
+            print()
+
+            return_order = {
+                **serializer.data,
+                **{"products_orders_id": serializer_product_orders.data["id"]}
+            }
+            
+            return Response(return_order, 201)
 
 
 class RetriveOrderView(RetrieveAPIView):
